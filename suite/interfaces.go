@@ -64,3 +64,15 @@ type SetupSubTest interface {
 type TearDownSubTest interface {
 	TearDownSubTest()
 }
+
+// BeforeSubTest has a function to be executed right before the subtest
+// starts and receives the suite, test and subtest names as input
+type BeforeSubTest interface {
+	BeforeSubTest(suiteName, testName, subTestName string)
+}
+
+// AfterSubTest has a function to be executed right after the subtest
+// finishes and receives the suite, test and subtest names as input
+type AfterSubTest interface {
+	AfterSubTest(suiteName, testName, subTestName string)
+}

@@ -7,6 +7,7 @@ import (
 	"reflect"
 	"regexp"
 	"runtime/debug"
+	"strings"
 	"sync"
 	"testing"
 	"time"
@@ -95,13 +96,28 @@ func failOnPanic(t *testing.T, r interface{}) {
 // Provides compatibility with go test pkg -run TestSuite/TestName/SubTestName.
 func (suite *Suite) Run(name string, subtest func()) bool {
 	oldT := suite.T()
+	var (
+		suiteName  string
+		parentName string
+	)
+	n := strings.Split(suite.s.T().Name(), "/")
+	if len(n) > 1 {
+		suiteName, parentName = n[0], strings.Join(n[1:len(n)], "/")
+	}
 
 	if setupSubTest, ok := suite.s.(SetupSubTest); ok {
 		setupSubTest.SetupSubTest()
 	}
 
+	if beforeSubTest, ok := suite.s.(BeforeSubTest); ok {
+		beforeSubTest.BeforeSubTest(suiteName, parentName, name)
+	}
+
 	defer func() {
 		suite.SetT(oldT)
+		if afterSubTest, ok := suite.s.(AfterSubTest); ok {
+			afterSubTest.AfterSubTest(suiteName, parentName, name)
+		}
 		if tearDownSubTest, ok := suite.s.(TearDownSubTest); ok {
 			tearDownSubTest.TearDownSubTest()
 		}
